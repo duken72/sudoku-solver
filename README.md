@@ -1,6 +1,6 @@
 # Sudoku solver
 
-A C++ Sudoku solver
+A C++ Sudoku solver.
 
 Sad story, I didn't know about backtracking when I started. If you don't know about it yet, you can check this [link](https://youtu.be/G_UYXzGuqvM).
 

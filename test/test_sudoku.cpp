@@ -4,7 +4,7 @@
 #include <string>
 #include <gtest/gtest.h>
 
-#include "../sudoku.hpp"
+#include "sudoku.hpp"
 
 
 class testSudoku : public testing::Test
@@ -47,9 +47,6 @@ TEST_F(testSudoku, TestConstructor)
     EXPECT_TRUE(npos != s.find("9|       |       |       |"));
     EXPECT_TRUE(npos != s.find("-------------------------"));
     EXPECT_EQ(game.get_num_found(), 0);
-    EXPECT_EQ(game.get_num_unchecked(), 0);
-    EXPECT_EQ(game.get_num_not_found(), S_MAP);
-    EXPECT_EQ(game.get_num_not_found() + game.get_num_found(), S_MAP);
 }
 
 TEST_F(testSudoku, TestConvertID2RowID)
@@ -131,9 +128,6 @@ TEST_F(testSudoku, TestGetMap)
     EXPECT_TRUE(npos != s.find("9|       |   6   |       |"));
     EXPECT_TRUE(npos != s.find("-------------------------"));
     EXPECT_EQ(game.get_num_found(), 29);
-    EXPECT_EQ(game.get_num_found(), game.get_num_unchecked());
-    EXPECT_EQ(game.get_num_not_found(), 52);
-    EXPECT_EQ(game.get_num_not_found() + game.get_num_found(), S_MAP);
 }
 
 TEST_F(testSudoku, TestGetMapInvalid)
@@ -155,14 +149,11 @@ TEST_F(testSudoku, TestGetMapInvalid)
     testing::internal::CaptureStdout();
     game.print();
     s = testing::internal::GetCapturedStdout();
-    EXPECT_TRUE(npos != s.find("4|   6 4 | 8 12   |       |"));
+    EXPECT_TRUE(npos != s.find("4|   6 4 | 8     |       |"));
     EXPECT_TRUE(npos == s.find("5|     3 |   5   | 9     |"));
     EXPECT_TRUE(npos == s.find("7|       | 4   2 | 8 1   |"));
     EXPECT_TRUE(npos == s.find("9|       |   6   |       |"));
     EXPECT_EQ(game.get_num_found(), 12);
-    EXPECT_EQ(game.get_num_found(), game.get_num_unchecked());
-    EXPECT_EQ(game.get_num_not_found(), 19);
-    EXPECT_TRUE(game.get_num_not_found() + game.get_num_found() < S_MAP);
 }
 
 TEST_F(testSudoku, TestPrintPossibleValues1)
@@ -195,7 +186,7 @@ TEST_F(testSudoku, TestPrintPossibleValues2)
     EXPECT_TRUE(npos == s.find("Cell 77"));
 }
 
-TEST_F(testSudoku, TestUpdate1)
+TEST_F(testSudoku, TestUpdateGroup1)
 {
     SUDOKU_VAL input[S_MAP] = { 8, 9, 3, 1, 5, 7, 6, 2, 4,
                                 5, 4, 7, 2, 3, 6, 9, 8, 1,
@@ -215,7 +206,7 @@ TEST_F(testSudoku, TestUpdate1)
     EXPECT_TRUE(npos == s.find("with"));
 }
 
-TEST_F(testSudoku, TestUpdate2)
+TEST_F(testSudoku, TestUpdateGroup2)
 {
     SUDOKU_VAL input[S_MAP] = { 8, 9, 3, 1, 5, 7, 6, 0, 4,
                                 5, 4, 7, 2, 3, 6, 9, 8, 1,
@@ -262,61 +253,43 @@ TEST_F(testSudoku, TestSetCellValue)
     EXPECT_EQ(s, "Invalid id for a cell: 92\n");
 
     EXPECT_EQ(game.get_num_found(), 29);
-    EXPECT_EQ(game.get_num_found(), game.get_num_unchecked());
-    EXPECT_EQ(game.get_num_not_found(), 52);
-    EXPECT_EQ(game.get_num_not_found() + game.get_num_found(), S_MAP);
 
     // Valid setting, unknown to known cell
     EXPECT_EQ(game.get_cell_value(1), 0);
     game.set_cell_value(1, 4);
     EXPECT_EQ(game.get_cell_value(1), 4);
     EXPECT_EQ(game.get_num_found(), 30);
-    EXPECT_EQ(game.get_num_unchecked(), 30);
-    EXPECT_EQ(game.get_num_not_found(), 51);
-    EXPECT_EQ(game.get_num_not_found() + game.get_num_found(), S_MAP);
 
     // Valid setting, no change 1
     EXPECT_EQ(game.get_cell_value(9), 0);
     game.set_cell_value(9, 0);
     EXPECT_EQ(game.get_cell_value(9), 0);
     EXPECT_EQ(game.get_num_found(), 30);
-    EXPECT_EQ(game.get_num_unchecked(), 30);
-    EXPECT_EQ(game.get_num_not_found(), 51);
-    EXPECT_EQ(game.get_num_not_found() + game.get_num_found(), S_MAP);
 
     // Valid setting, no change 2
     EXPECT_EQ(game.get_cell_value(42), 9);
     game.set_cell_value(42, 9);
     EXPECT_EQ(game.get_cell_value(42), 9);
     EXPECT_EQ(game.get_num_found(), 30);
-    EXPECT_EQ(game.get_num_unchecked(), 30);
-    EXPECT_EQ(game.get_num_not_found(), 51);
-    EXPECT_EQ(game.get_num_not_found() + game.get_num_found(), S_MAP);
 
     // Valid setting, known to unknown cell
     EXPECT_EQ(game.get_cell_value(4), 1);
     game.set_cell_value(4, 0);
     EXPECT_EQ(game.get_cell_value(4), 0);
     EXPECT_EQ(game.get_num_found(), 29);
-    EXPECT_EQ(game.get_num_unchecked(), 29);
-    EXPECT_EQ(game.get_num_not_found(), 52);
-    EXPECT_EQ(game.get_num_not_found() + game.get_num_found(), S_MAP);
 }
 
-TEST_F(testSudoku, TestAdvancedUpdate)
-{
+TEST_F(testSudoku, TestUniqueUpdate)
+{}
 
-}
+TEST_F(testSudoku, TestDuoUpdate)
+{}
 
 TEST_F(testSudoku, TestFillValues)
-{
-
-}
+{}
 
 TEST_F(testSudoku, TestSolve)
-{
-
-}
+{}
 
 int main(int argc, char ** argv)
 {

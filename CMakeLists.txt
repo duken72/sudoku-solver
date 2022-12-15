@@ -2,10 +2,12 @@ cmake_minimum_required(VERSION 3.22.1)
 
 project(sudoku_solver)
 
+include_directories(
+    include
+)
+
 add_executable(${PROJECT_NAME} sudoku.cpp)
 
-# Linking
-    
 # Testing
 find_package(GTest REQUIRED)
 enable_testing()

@@ -1,7 +1,7 @@
 #include <string>
 #include <gtest/gtest.h>
 
-#include "../possible_value.hpp"
+#include "possible_value.hpp"
 
 
 class testPossibleValue : public testing::Test
@@ -31,30 +31,31 @@ TEST_F(testPossibleValue, TestConstructor)
 TEST_F(testPossibleValue, TestGetN)
 {
     EXPECT_EQ(p.get_N(), 9);
-
+    // Invalid removal
     testing::internal::CaptureStdout();
     p.remove_val(0);
     s = testing::internal::GetCapturedStdout();
     EXPECT_EQ(p.get_N(), 9);
-
+    // Valid removal
     p.remove_val(2);
     EXPECT_EQ(p.get_N(), 8);
-
+    // Duplicated removal
     p.remove_val(2);
     EXPECT_EQ(p.get_N(), 8);
+    // Valid removal
     p.remove_val(7);
     EXPECT_EQ(p.get_N(), 7);
-
+    // Invalid removal
     testing::internal::CaptureStdout();
     p.remove_val(10);
     s = testing::internal::GetCapturedStdout();
     EXPECT_EQ(p.get_N(), 7);
-
+    // Invalid removal
     testing::internal::CaptureStdout();
     p.remove_val(0);
     s = testing::internal::GetCapturedStdout();
     EXPECT_EQ(p.get_N(), 7);
-
+    // Valid removal
     p.remove_val(9);
     p.remove_val(5);
     EXPECT_EQ(p.get_N(), 5);
@@ -62,6 +63,7 @@ TEST_F(testPossibleValue, TestGetN)
 
 TEST_F(testPossibleValue, TestCheckVal)
 {
+    // Invalid removal
     testing::internal::CaptureStdout();
     p.remove_val(0);
     s = testing::internal::GetCapturedStdout();
@@ -75,7 +77,7 @@ TEST_F(testPossibleValue, TestCheckVal)
     EXPECT_TRUE(p.check_val(7));
     EXPECT_TRUE(p.check_val(8));
     EXPECT_TRUE(p.check_val(9));
-
+    // Invalid removal
     testing::internal::CaptureStdout();
     p.remove_val(12);
     s = testing::internal::GetCapturedStdout();
@@ -89,7 +91,7 @@ TEST_F(testPossibleValue, TestCheckVal)
     EXPECT_TRUE(p.check_val(7));
     EXPECT_TRUE(p.check_val(8));
     EXPECT_TRUE(p.check_val(9));
-
+    // Valid removal
     p.remove_val(2);
     EXPECT_TRUE(p.check_val(0));
     EXPECT_TRUE(p.check_val(1));
@@ -101,7 +103,7 @@ TEST_F(testPossibleValue, TestCheckVal)
     EXPECT_TRUE(p.check_val(7));
     EXPECT_TRUE(p.check_val(8));
     EXPECT_TRUE(p.check_val(9));
-
+    // Valid removal
     p.remove_val(9);
     EXPECT_TRUE(p.check_val(0));
     EXPECT_TRUE(p.check_val(1));
@@ -113,7 +115,7 @@ TEST_F(testPossibleValue, TestCheckVal)
     EXPECT_TRUE(p.check_val(7));
     EXPECT_TRUE(p.check_val(8));
     EXPECT_FALSE(p.check_val(9));
-
+    // Valid removal
     p.remove_val(5);
     EXPECT_TRUE(p.check_val(0));
     EXPECT_TRUE(p.check_val(1));
@@ -125,7 +127,7 @@ TEST_F(testPossibleValue, TestCheckVal)
     EXPECT_TRUE(p.check_val(7));
     EXPECT_TRUE(p.check_val(8));
     EXPECT_FALSE(p.check_val(9));
-
+    // Valid removal
     p.remove_val(7);
     EXPECT_TRUE(p.check_val(0));
     EXPECT_TRUE(p.check_val(1));
@@ -137,7 +139,7 @@ TEST_F(testPossibleValue, TestCheckVal)
     EXPECT_FALSE(p.check_val(7));
     EXPECT_TRUE(p.check_val(8));
     EXPECT_FALSE(p.check_val(9));
-
+    // Valid removal
     p.remove_val(1);
     p.remove_val(2);
     p.remove_val(3);
@@ -161,30 +163,31 @@ TEST_F(testPossibleValue, TestCheckVal)
 
 TEST_F(testPossibleValue, TestRemoveValue)
 {
+    // Invalid removal
     testing::internal::CaptureStdout();
     p.remove_val(0);
     s = testing::internal::GetCapturedStdout();
     ASSERT_EQ(s, "Error: Invalid value (not in range 1 to 9).\n");
-
+    // Valid removal
     p.remove_val(1);
     EXPECT_EQ(p.get_N(), 8);
     EXPECT_FALSE(p.check_val(1));
-
+    // Invalid removal
     testing::internal::CaptureStdout();
     p.remove_val(10);
     s = testing::internal::GetCapturedStdout();
     ASSERT_EQ(s, "Error: Invalid value (not in range 1 to 9).\n");
     EXPECT_EQ(p.get_N(), 8);
-
+    // Duplicated removal
     p.remove_val(1);
     EXPECT_EQ(p.get_N(), 8);
     EXPECT_FALSE(p.check_val(1));
-
+    // Invalid removal
     testing::internal::CaptureStdout();
     p.remove_val(20);
     s = testing::internal::GetCapturedStdout();
     ASSERT_EQ(s, "Error: Invalid value (not in range 1 to 9).\n");
-
+    // Valid removal
     p.remove_val(2);
     p.remove_val(4);
     p.remove_val(9);

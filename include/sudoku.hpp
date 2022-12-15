@@ -14,7 +14,8 @@
 #define LOGGING false
 
 using std::cin, std::cout, std::endl;
-using std::vector, std::array, std::pair, std::make_pair;
+using std::vector, std::array;
+using std::pair, std::make_pair;
 
 // TODO: Add namespace to packaging
 
@@ -28,31 +29,67 @@ public:
     static SUDOKU_ID id2column_id(const SUDOKU_ID &id);
     static SUDOKU_ID id2block_id(const SUDOKU_ID &id);
 
-    void get_map();                     // get map from std::cin
-    void get_map(SUDOKU_VAL array[]);   // get map from an array
+    // Read map from std::cin
+    void get_map();
 
-    int get_num_found() const;          // get number of found cells
-    int get_num_unchecked() const;      // get number of checked cells
-    int get_num_not_found() const;      // get number of unfound cells
+    // Read map from an array
+    void get_map(SUDOKU_VAL array[]);
+
+    // Get number of found cells
+    int get_num_found() const;
 
     void set_cell_value(const SUDOKU_ID &id, const SUDOKU_VAL &val);
     SUDOKU_VAL get_cell_value(const SUDOKU_ID &id) const;
     bool is_possible(const SUDOKU_ID &id, const SUDOKU_VAL &val) const;
 
-    void print() const;                 // print the map
-    void print_possible_values() const; // print cells' possible values
+    // Print the map
+    void print() const;
 
+    // Use possible_vals_ to print cells' possible values
+    void print_possible_values() const;
+
+    // Update ids_found_ and ids_not_found_
+    void update_id();
+
+    /**
+     * Update possible_vals_: possible values of a cell based on
+     * found values of other cells in the same row, column or block.
+     * possible_vals_ is later used in 3 update methods.
+     */
     void update_group();
+
+    /**
+     * Check if in a group (row, column, block), there is only one
+     * valid cell for a missing value
+     */
     void update_unique();
+
+    /**
+     * Check if in a group (row, column, block), there are two cells
+     * with the exact same two possible values.
+     */
     void update_duo();
+
+    // void update_trio();
+
+    /**
+     * Check in each block, if a value can lie only in a specific row/column
+     * Similar to update_duo, but this is the more common case. 
+     * The code is hideous, but ... probably faster.
+     */
     void update_block();
-    // Fill cells with only 1 possible values
+
+    // Based on possible_vals_, fill cells with only 1 suitable value
     void fill_certain_values();
+
+    // Apply backtracking to try-out possible scenarios
     bool backtracking(const std::vector<SUDOKU_ID>::iterator &it);
+
+    // Final solver
     void solve();
 
 private:
-    SUDOKU_VAL map_[S_MAP];
+    array<SUDOKU_VAL, S_MAP> map_;
     vector<SUDOKU_ID> ids_found_;       // id of known cells
     vector<SUDOKU_ID> ids_not_found_;   // id of unknown cells
     // id of known cells but haven't used for update
@@ -60,15 +97,7 @@ private:
     array<possible_value, S_MAP> possible_vals_;
 };
 
-Sudoku::Sudoku() {
-    for (int i = 0; i < S_MAP; i++)
-        map_[i] = 0;
-    ids_found_.clear();
-    ids_unchecked_.clear();
-    ids_not_found_.clear();
-    for (SUDOKU_ID id = 0; id < S_MAP; id++)
-        ids_not_found_.push_back(id);
-}
+Sudoku::Sudoku() { map_.fill(0); }
 
 Sudoku::~Sudoku() {}
 
@@ -80,6 +109,7 @@ void Sudoku::get_map() {
         cin >> map_[i];
         if (map_[i] < 0 || map_[i] > 9) {
             cout << "Invalid value for a cell: " << map_[i] << endl;
+            map_[i] = 0;
             break;
         }
         if (map_[i] == 0)
@@ -99,6 +129,7 @@ void Sudoku::get_map(SUDOKU_VAL array[]) {
         map_[i] = array[i];
         if (map_[i] < 0 || map_[i] > 9) {
             cout << "Invalid value for a cell: " << map_[i] << endl;
+            map_[i] = 0;
             break;
         }
         if (map_[i] == 0)
@@ -130,7 +161,7 @@ void Sudoku::print() const {
 }
 
 void Sudoku::print_possible_values() const {
-    for (auto id_not_found : ids_not_found_) {
+    for (SUDOKU_ID id_not_found : ids_not_found_) {
         cout << "Cell " << id_not_found << " with ";
         possible_vals_[id_not_found].print();
     }
@@ -160,8 +191,18 @@ SUDOKU_ID Sudoku::id2block_id(const SUDOKU_ID &id) {
     return (id / 27) * 3 + (id % 9) / 3;
 }
 
-// Update possible values of a cell based on found values
-// of other cells in the same row, column or block 
+void Sudoku::update_id()
+{
+    ids_found_.clear();
+    ids_not_found_.clear();
+    for (SUDOKU_ID id = 0; id < S_MAP; id++) {
+        if (map_[id])
+            ids_found_.push_back(id);
+        else
+            ids_not_found_.push_back(id);
+    }
+}
+
 void Sudoku::update_group()
 {
     if (ids_unchecked_.empty())
@@ -171,10 +212,10 @@ void Sudoku::update_group()
     cout << ids_unchecked_.size() << " value(s) is/are used for update." << endl;
 #endif
 
-    // Lambda function to remove possible values of unknown cells
-    // of the same group
+    // Remove possible values of unknown cells of the same group
+    SUDOKU_VAL val = 0;
     auto rm_possible_val = [&](
-        const SUDOKU_ID group_ids[S][S], SUDOKU_ID id_g, SUDOKU_VAL val)
+        const SUDOKU_ID group_ids[S][S], SUDOKU_ID id_g)
     {
         for (SUDOKU_ID id : group_ids[id_g]) {
             if (map_[id] == 0)
@@ -184,33 +225,24 @@ void Sudoku::update_group()
 
     for (SUDOKU_ID id_unchecked : ids_unchecked_) {
         possible_vals_[id_unchecked].clear();
-        SUDOKU_VAL val = map_[id_unchecked];
-        SUDOKU_ID id_row = id2row_id(id_unchecked);
-        SUDOKU_ID id_column = id2column_id(id_unchecked);
-        SUDOKU_ID id_block = id2block_id(id_unchecked);
-
-        rm_possible_val(ROW_IDS, id_row, val);
-        rm_possible_val(COLUMN_IDS, id_column, val);
-        rm_possible_val(BLOCK_IDS, id_block, val);
+        val = map_[id_unchecked];
+        rm_possible_val(ROW_IDS, id2row_id(id_unchecked));
+        rm_possible_val(COLUMN_IDS, id2column_id(id_unchecked));
+        rm_possible_val(BLOCK_IDS, id2block_id(id_unchecked));
     }
     ids_unchecked_.clear();
 }
 
-/**
- * If in a group (row, column, block), there is only one cell
- * can take a missing value, then the only possible value for
- * that cell is that missing value.
- */
 void Sudoku::update_unique()
 {
     auto keep_unique_val = [&](const SUDOKU_ID group_ids[S][S])
     {
-        for (int id_g = 0; id_g < S; id_g++) {  // id of group in groups
+        for (int id_g = 0; id_g < S; id_g++) {  // id of group
             SUDOKU_VAL num_cells[S] = { 0 };
             SUDOKU_ID id_cells[S] = { 0 };
             for (SUDOKU_VAL val = 1; val <= S; val++) {
                 for (SUDOKU_ID id : group_ids[id_g]) {
-                    if (map_[id])               // only unknown cells
+                    if (map_[id])           // only unknown cells
                         continue;
                     if (!possible_vals_[id].check_val(val))
                         continue;
@@ -231,11 +263,6 @@ void Sudoku::update_unique()
     keep_unique_val(BLOCK_IDS);
 }
 
-/**
- * If in a group (row, column, block), there are two cells with
- * the same two possible values, then other cells in that group
- * can not have these two values.
- */
 void Sudoku::update_duo()
 {
     auto find_duo = [&](const SUDOKU_ID group_ids[S][S])
@@ -287,15 +314,8 @@ void Sudoku::update_duo()
     find_duo(BLOCK_IDS);
 }
 
-// TODO
-// void Sudoku::update_trio() {}
+// TODO: void Sudoku::update_trio() {}
 
-/**
- * For each block, check for each value whether that value
- * can lie only in specific row/column. If yes, unknown cells in
- * other block (of that same row/column), and other unknown cells
- * in the same block also can not have that value.
- */
 void Sudoku::update_block()
 {
     // id of current block, row and column of unknown value.
@@ -323,12 +343,7 @@ void Sudoku::update_block()
                     }
                 }
             }
-            // Unknown cells (same row/column/block) can't have that value
-            // id_r, ROW_IDS, id2row_id
             if (id_r < VALID) {
-                // cout << "Value " << val
-                //      << " block " << id_b
-                //      << " row " << id_r << endl;
                 for (SUDOKU_ID id : ROW_IDS[id_r]) {
                     // Consider only unknown cells of other block
                     if (map_[id] || id2block_id(id) == id_b)
@@ -343,9 +358,6 @@ void Sudoku::update_block()
                 }
             }
             if (id_c < VALID) {
-                // cout << "Value " << val
-                //      << " block " << id_b
-                //      << " col " << id_c << endl;
                 for (SUDOKU_ID id : COLUMN_IDS[id_c]) {
                     // Consider only unknown cells of other block
                     if (map_[id] || id2block_id(id) == id_b)
@@ -364,7 +376,8 @@ void Sudoku::update_block()
     }
 }
 
-void Sudoku::fill_certain_values() {
+void Sudoku::fill_certain_values()
+{
     vector<std::vector<SUDOKU_ID>::iterator> to_delete;
     for (SUDOKU_ID id : ids_not_found_) {
         if (possible_vals_[id].get_N() != 1)
@@ -384,11 +397,13 @@ void Sudoku::fill_certain_values() {
         ids_not_found_.erase(it);
 }
 
-int Sudoku::get_num_found() const { return ids_found_.size(); }
-
-int Sudoku::get_num_not_found() const { return ids_not_found_.size(); }
-
-int Sudoku::get_num_unchecked() const { return ids_unchecked_.size(); }
+int Sudoku::get_num_found() const {
+    SUDOKU_VAL result = 0;
+    for (SUDOKU_ID i = 0; i < S_MAP; i++)
+        if (map_[i])
+            result++;
+    return result;
+}
 
 void Sudoku::set_cell_value(
     const SUDOKU_ID &id, const SUDOKU_VAL &val)
@@ -401,25 +416,15 @@ void Sudoku::set_cell_value(
         cout << "Invalid id for a cell: " << id << endl;
         return;
     }
-    
-    if (map_[id] != 0 && val == 0) {
-        ids_found_.erase(find(begin(ids_found_), end(ids_found_), id));
-        ids_not_found_.push_back(id);
-        auto it = find(begin(ids_unchecked_), end(ids_unchecked_), id);
-        if (it != ids_unchecked_.end())
-            ids_unchecked_.erase(it);
-    } else if (map_[id] == 0 && val != 0) {
-        ids_not_found_.erase(find(begin(ids_not_found_), end(ids_not_found_), id));
-        ids_found_.push_back(id);
-        ids_unchecked_.push_back(id);
-    }
     map_[id] = val;
 }
 
 bool Sudoku::is_possible(
     const SUDOKU_ID &idIn, const SUDOKU_VAL &val) const
 {
-    // cout << "Checking " << val << " at " << idIn << endl;
+#if LOGGING
+    cout << "Checking " << val << " at " << idIn << endl;
+#endif
     // Lambda function checking other any other cells has that value
     auto check_collision = [&](
         const SUDOKU_ID group_ids[S][S], SUDOKU_ID id_g)

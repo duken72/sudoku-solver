@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "../typedef.hpp"
+#include "typedef.hpp"
 
 class testTypeDef : public testing::Test
 {

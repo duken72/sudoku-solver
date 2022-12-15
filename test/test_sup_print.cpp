@@ -2,7 +2,7 @@
 #include <vector>
 #include <gtest/gtest.h>
 
-#include "../sup_print.hpp"
+#include "sup_print.hpp"
 
 
 class testSupportPrint : public testing::Test
