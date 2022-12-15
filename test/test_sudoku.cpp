@@ -35,61 +35,6 @@ protected:
     void TearDown() {};
 };
 
-TEST_F(testSudoku, TestConst) {
-    EXPECT_EQ(S, 9);
-    EXPECT_EQ(S_MAP, 81);
-    EXPECT_EQ(VALID, 10);
-    EXPECT_EQ(ERROR, 20);
-}
-
-TEST_F(testSudoku, TestROW_IDS)
-{
-    EXPECT_EQ(ROW_IDS[0][2], 2);
-    EXPECT_EQ(ROW_IDS[5][7], 52);
-
-    SUDOKU_VAL sum = 0;
-    for (int i = 0; i < S; i++)
-        sum += ROW_IDS[0][i];
-    EXPECT_EQ(sum, (0 + 8) * 9 / 2);
-
-    sum = 0;
-    for (int i = 0; i < S; i++)
-        sum += ROW_IDS[8][i];
-    EXPECT_EQ(sum, (72 + 80) * 9 / 2);
-}
-
-TEST_F(testSudoku, TestCOLUMN_IDS)
-{
-    EXPECT_EQ(COLUMN_IDS[0][2], 18);
-    EXPECT_EQ(COLUMN_IDS[5][7], 68);
-
-    SUDOKU_VAL sum = 0;
-    for (int i = 0; i < S; i++)
-        sum += COLUMN_IDS[0][i];
-    EXPECT_EQ(sum, (0 + 72) * 9 / 2);
-
-    sum = 0;
-    for (int i = 0; i < S; i++)
-        sum += COLUMN_IDS[8][i];
-    EXPECT_EQ(sum, (8 + 80) * 9 / 2);
-}
-
-TEST_F(testSudoku, TestBLOCK_IDS)
-{
-    EXPECT_EQ(BLOCK_IDS[0][2], 2);
-    EXPECT_EQ(BLOCK_IDS[5][7], 52);
-
-    SUDOKU_VAL sum = 0;
-    for (int i = 0; i < S; i++)
-        sum += BLOCK_IDS[0][i];
-    EXPECT_EQ(sum, (1 + 10 + 19) * 3);
-
-    sum = 0;
-    for (int i = 0; i < S; i++)
-        sum += BLOCK_IDS[8][i];
-    EXPECT_EQ(sum, (61 + 70 + 79) * 3);
-}
-
 TEST_F(testSudoku, TestConstructor)
 {
     testing::internal::CaptureStdout();
@@ -224,7 +169,7 @@ TEST_F(testSudoku, TestPrintPossibleValues1)
 {
     game.get_map(input1);
     testing::internal::CaptureStdout();
-    game.update_possible_values();
+    game.update_group();
     game.print_possible_values();
     s = testing::internal::GetCapturedStdout();
     EXPECT_TRUE(npos != s.find("Cell 14 with 2 possible values: 5 8"));
@@ -239,7 +184,7 @@ TEST_F(testSudoku, TestPrintPossibleValues2)
 {
     game.get_map(input2);
     testing::internal::CaptureStdout();
-    game.update_possible_values();
+    game.update_group();
     game.print_possible_values();
     s = testing::internal::GetCapturedStdout();
     EXPECT_TRUE(npos != s.find("Cell 1 with 3 possible values: 3 4 9"));
@@ -263,7 +208,7 @@ TEST_F(testSudoku, TestUpdate1)
                                 2, 5, 4, 3, 7, 9, 1, 6, 8};
     game.get_map(input);
     testing::internal::CaptureStdout();
-    game.update_possible_values();
+    game.update_group();
     game.print_possible_values();
     s = testing::internal::GetCapturedStdout();
     EXPECT_TRUE(npos == s.find("Cell"));
@@ -283,12 +228,12 @@ TEST_F(testSudoku, TestUpdate2)
                                 2, 5, 4, 3, 7, 9, 1, 0, 8};
     game.get_map(input);
     testing::internal::CaptureStdout();
-    game.update_possible_values();
+    game.update_group();
     game.print_possible_values();
     s = testing::internal::GetCapturedStdout();
-    EXPECT_TRUE(npos != s.find("79 value(s) is/are used for update."));
     EXPECT_TRUE(npos != s.find("Cell 7 with 1 possible values: 2"));
     EXPECT_TRUE(npos != s.find("Cell 79 with 1 possible values: 6"));
+    cout << s << endl;
 }
 
 TEST_F(testSudoku, TestGetCellValue)

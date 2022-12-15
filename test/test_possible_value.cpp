@@ -197,6 +197,56 @@ TEST_F(testPossibleValue, TestRemoveValue)
     EXPECT_FALSE(p.check_val(9));
 }
 
+TEST_F(testPossibleValue, TestKeepOnlyValue)
+{
+    testing::internal::CaptureStdout();
+    p.keep_only_val(0);
+    s = testing::internal::GetCapturedStdout();
+    EXPECT_EQ(s, "Error: Invalid value (not in range 1 to 9).\n");
+
+    p.keep_only_val(1);
+    EXPECT_EQ(p.get_N(), 1);
+    EXPECT_TRUE(p.check_val(1));
+
+    testing::internal::CaptureStdout();
+    p.keep_only_val(10);
+    s = testing::internal::GetCapturedStdout();
+    EXPECT_EQ(s, "Error: Invalid value (not in range 1 to 9).\n");
+    EXPECT_EQ(p.get_N(), 1);
+
+    p.keep_only_val(1);
+    EXPECT_EQ(p.get_N(), 1);
+    EXPECT_TRUE(p.check_val(1));
+
+    testing::internal::CaptureStdout();
+    p.keep_only_val(20);
+    s = testing::internal::GetCapturedStdout();
+    EXPECT_EQ(s, "Error: Invalid value (not in range 1 to 9).\n");
+    EXPECT_EQ(p.get_N(), 1);
+
+    p.keep_only_val(2);
+    EXPECT_TRUE(p.check_val(2));
+    p.keep_only_val(4);
+    EXPECT_TRUE(p.check_val(4));
+    p.keep_only_val(9);
+    EXPECT_TRUE(p.check_val(9));
+    p.keep_only_val(2);
+    p.keep_only_val(5);
+    p.keep_only_val(7);
+    p.keep_only_val(9);
+    p.keep_only_val(2);
+    EXPECT_TRUE(p.check_val(2));
+    EXPECT_FALSE(p.check_val(0));
+    EXPECT_FALSE(p.check_val(1));
+    EXPECT_FALSE(p.check_val(3));
+    EXPECT_FALSE(p.check_val(4));
+    EXPECT_FALSE(p.check_val(5));
+    EXPECT_FALSE(p.check_val(6));
+    EXPECT_FALSE(p.check_val(7));
+    EXPECT_FALSE(p.check_val(8));
+    EXPECT_FALSE(p.check_val(9));
+}
+
 TEST_F(testPossibleValue, TestClear)
 {
     p.clear();
@@ -268,67 +318,75 @@ TEST_F(testPossibleValue, TestPrint)
 TEST_F(testPossibleValue, TestGetVal1)
 {
     p.remove_val(1);
-    EXPECT_EQ(p.get_val(), 0);
+    EXPECT_EQ(p.get_val().size(), 8);
     p.remove_val(2);
-    EXPECT_EQ(p.get_val(), 0);
+    EXPECT_EQ(p.get_val().size(), 7);
     p.remove_val(3);
-    EXPECT_EQ(p.get_val(), 0);
+    EXPECT_EQ(p.get_val().size(), 6);
     p.remove_val(4);
-    EXPECT_EQ(p.get_val(), 0);
+    EXPECT_EQ(p.get_val().size(), 5);
     p.remove_val(5);
-    EXPECT_EQ(p.get_val(), 0);
+    EXPECT_EQ(p.get_val().size(), 4);
     p.remove_val(6);
-    EXPECT_EQ(p.get_val(), 0);
+    EXPECT_EQ(p.get_val().size(), 3);
     p.remove_val(7);
-    EXPECT_EQ(p.get_val(), 0);
+    EXPECT_EQ(p.get_val().size(), 2);
     p.remove_val(8);
-    EXPECT_EQ(p.get_val(), 9);
+    EXPECT_EQ(p.get_val().size(), 1);
+    EXPECT_EQ(p.get_val()[0], 9);
     p.remove_val(9);
-    EXPECT_EQ(p.get_val(), 0);
+    EXPECT_TRUE(p.get_val().empty());
 }
 
 TEST_F(testPossibleValue, TestGetVal2)
 {
     p.remove_val(1);
-    EXPECT_EQ(p.get_val(), 0);
+    EXPECT_EQ(p.get_val().size(), 8);
     p.remove_val(3);
-    EXPECT_EQ(p.get_val(), 0);
+    EXPECT_EQ(p.get_val().size(), 7);
     p.remove_val(4);
-    EXPECT_EQ(p.get_val(), 0);
+    EXPECT_EQ(p.get_val().size(), 6);
     p.remove_val(5);
-    EXPECT_EQ(p.get_val(), 0);
+    EXPECT_EQ(p.get_val().size(), 5);
     p.remove_val(6);
-    EXPECT_EQ(p.get_val(), 0);
+    EXPECT_EQ(p.get_val().size(), 4);
     p.remove_val(7);
-    EXPECT_EQ(p.get_val(), 0);
+    EXPECT_EQ(p.get_val().size(), 3);
     p.remove_val(8);
-    EXPECT_EQ(p.get_val(), 0);
+    EXPECT_EQ(p.get_val().size(), 2);
     p.remove_val(9);
-    EXPECT_EQ(p.get_val(), 2);
+    EXPECT_EQ(p.get_val().size(), 1);
+    EXPECT_EQ(p.get_val()[0], 2);
     p.remove_val(2);
-    EXPECT_EQ(p.get_val(), 0);
+    EXPECT_TRUE(p.get_val().empty());
 }
 
 TEST_F(testPossibleValue, TestGetVal3)
 {
     p.remove_val(1);
-    EXPECT_EQ(p.get_val(), 0);
-    p.remove_val(2);
-    EXPECT_EQ(p.get_val(), 0);
     p.remove_val(3);
-    EXPECT_EQ(p.get_val(), 0);
     p.remove_val(4);
-    EXPECT_EQ(p.get_val(), 0);
     p.remove_val(5);
-    EXPECT_EQ(p.get_val(), 0);
     p.remove_val(6);
-    EXPECT_EQ(p.get_val(), 0);
-    p.remove_val(8);
-    EXPECT_EQ(p.get_val(), 0);
-    p.remove_val(9);
-    EXPECT_EQ(p.get_val(), 7);
     p.remove_val(7);
-    EXPECT_EQ(p.get_val(), 0);
+    p.remove_val(8);
+    EXPECT_EQ(p.get_val().size(), 2);
+    EXPECT_EQ(p.get_val()[0], 2);
+    EXPECT_EQ(p.get_val()[1], 9);
+}
+
+TEST_F(testPossibleValue, TestGetVal4)
+{
+    p.remove_val(1);
+    p.remove_val(2);
+    p.remove_val(3);
+    p.remove_val(4);
+    p.remove_val(6);
+    p.remove_val(8);
+    p.remove_val(9);
+    EXPECT_EQ(p.get_val().size(), 2);
+    EXPECT_EQ(p.get_val()[0], 5);
+    EXPECT_EQ(p.get_val()[1], 7);
 }
 
 int main(int argc, char ** argv)

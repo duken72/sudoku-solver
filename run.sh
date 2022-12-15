@@ -4,11 +4,10 @@ clear
 cmake -S . -B build
 cd build && make
 
-# ctest -V
-./test_possible_value
-./test_sup_print
-./test_sudoku
+GTEST_COLOR=1 ctest
+# GTEST_COLOR=1 ctest -V
+
+# ./sudoku_solver < ../test/t2.txt
+./sudoku_solver < ../test/t1.txt
 
 cd ..
-# ./build/sudoku_solver < test/t2.txt
-# ./build/sudoku_solver < test/t1.txt
