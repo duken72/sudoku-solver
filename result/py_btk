@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+
+import sys
+import numpy as np
+from rich import print
+
+
+S = 9
+
+
+def read_grid() -> np.ndarray:
+    grid = []
+    for i in range(S):
+        grid.append(list(map(int, input().split(' '))))
+    return np.array(grid)
+
+
+def check_possible(x:int, y:int, val:int, grid:np.ndarray) -> bool:
+    # Check row
+    for xi in range(9):
+        if grid[y][xi] == val:
+            return False
+    # Check column
+    for yi in range(9):
+        if grid[yi][x] == val:
+            return False
+    # Check block
+    x0 = (x // 3) * 3
+    y0 = (y // 3) * 3
+    for i in range(3):
+        for j in range(3):
+            if grid[y0+i][x0+j] == val:
+                return False
+    return True
+
+
+def solve(grid: np.ndarray):
+    for y in range(S):
+        for x in range(S):
+            if grid[y][x] != 0:
+                continue
+            for val in range(1, 10):
+                if check_possible(x, y, val, grid):
+                    grid[y][x] = val
+                    solve(grid)
+                    grid[y][x] = 0
+            return None
+    np.savetxt(sys.stdout.buffer, grid, fmt="%.f")
+
+
+def main():
+    grid = read_grid()
+    solve(grid)
+
+
+if __name__ == "__main__":
+    main()

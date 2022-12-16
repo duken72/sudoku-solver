@@ -44,6 +44,7 @@ public:
 
     // Print the map
     void print() const;
+    void print_clean() const;
 
     // Use possible_vals_ to print cells' possible values
     void print_possible_values() const;
@@ -141,7 +142,8 @@ void Sudoku::get_map(SUDOKU_VAL array[]) {
     }
 }
 
-void Sudoku::print() const {
+void Sudoku::print() const
+{
     cout << "   1 2 3   4 5 6   7 8 9" << endl;
     cout << " -------------------------" << endl;
     for (int i = 0; i < S_MAP; i++) {
@@ -158,6 +160,19 @@ void Sudoku::print() const {
         if (i % 27 == 26)
             cout << " -------------------------" << endl;
     }
+}
+
+void Sudoku::print_clean() const
+{
+    for (int i = 0; i < S_MAP; i++) {
+        cout << map_[i];
+        if (i % 9 == 8)
+            cout << endl;
+        else if (i == 80)
+            return;
+        else
+            cout << " ";
+    }    
 }
 
 void Sudoku::print_possible_values() const {
@@ -457,7 +472,7 @@ bool Sudoku::backtracking(const std::vector<SUDOKU_ID>::iterator &it)
     SUDOKU_ID id = *it;
     if (map_[id])
         return backtracking(it + 1);
-    for (SUDOKU_VAL val = 1; val <= S; val++) {
+    for (SUDOKU_VAL val : possible_vals_[id].get_val()) {
         if (is_possible(id, val)) {
             map_[id] = val;
             if (backtracking(it + 1))
@@ -470,6 +485,7 @@ bool Sudoku::backtracking(const std::vector<SUDOKU_ID>::iterator &it)
 
 void Sudoku::solve()
 {
+    print();
     while (ids_unchecked_.size()) {
         update_group();
         update_unique();
@@ -477,8 +493,10 @@ void Sudoku::solve()
         update_duo();
         fill_certain_values();
     }
+    // print_possible_values();
     backtracking(ids_not_found_.begin());
     print();
+    // print_clean();
 }
 
 #endif  // SUDOKU_SOLVER__SUDOKU_HPP_
